@@ -49,15 +49,17 @@
           type="text"
           class="add-form-name"
           placeholder="Введите ваше имя"
+          id="name"
         />
         <textarea
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
           rows="4"
+          id="comment"
         ></textarea>
         <div class="add-form-row">
-          <button class="add-form-button">Написать</button>
+          <button class="add-form-button" id="submit">Написать</button>
         </div>
       </div>
     </div>
@@ -65,7 +67,73 @@
 
   <script>
     "use strict";
-    // Код писать здесь
-    console.log("It works!");
+
+    const nameInput = document.getElementById("name");
+    const commentInput = document.getElementById("comment");
+    const addButton = document.getElementById("submit");
+    const commentsList = document.querySelector(".comments");
+
+    let userName = "";
+    let userComment = "";
+
+    nameInput.addEventListener("input", () => {
+      userName = nameInput.value;
+      nameInput.classList.remove("error");
+    });
+
+    commentInput.addEventListener("input", () => {
+      userComment = commentInput.value;
+      commentInput.classList.remove("error");
+    });
+
+    addButton.addEventListener("click", () => {
+      nameInput.classList.remove("error");
+      commentInput.classList.remove("error");
+
+      if (userName.trim() === "") {
+        nameInput.classList.add("error");
+        return;
+      }
+
+      if (userComment.trim() === "") {
+        commentInput.classList.add("error");
+        return;
+      }
+
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = String(now.getFullYear()).slice(-2);
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const currentDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+
+      const newComment = `
+        <li class="comment">
+          <div class="comment-header">
+            <div>${userName}</div>
+            <div>${currentDate}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${userComment}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">0</span>
+              <button class="like-button"></button>
+            </div>
+          </div>
+        </li>
+      `;
+
+      commentsList.innerHTML += newComment;
+
+      nameInput.value = "";
+      commentInput.value = "";
+      userName = "";
+      userComment = "";
+    });
   </script>
 </html>
