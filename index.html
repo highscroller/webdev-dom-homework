@@ -51,6 +51,7 @@
           placeholder="Введите ваше имя"
           id="name"
         />
+        <div class="add-form-reply" id="reply-to" hidden></div>
         <textarea
           type="textarea"
           class="add-form-text"
@@ -72,9 +73,11 @@
     const commentInput = document.getElementById("comment");
     const addButton = document.getElementById("submit");
     const commentsList = document.querySelector(".comments");
+    const replyHint = document.getElementById("reply-to");
 
     let userName = "";
     let userComment = "";
+    let replyToCommentIndex = null;
 
     const comments = [
       {
@@ -82,22 +85,57 @@
         comment: "Это будет первый комментарий на этой странице",
         date: "12.02.2022 12:18:00",
         likes: 3,
-        isLiked: false
+        isLiked: false,
+        replies: []
       },
       {
         name: "Варвара Н.",
         comment: "Мне нравится как оформлена эта страница! ❤",
         date: "13.02.2022 19:22:00",
         likes: 75,
-        isLiked: true
+        isLiked: true,
+        replies: [
+          {
+            name: "Варвара Н.",
+            comment: "Мне нравится как оформлена эта страница! ❤",
+            date: "13.02.2022 19:22:00",
+            likes: 75,
+            isLiked: true,
+          }, 
+          {
+            name: "Варвара Н.",
+            comment: "Мне нравится как оформлена эта страница! ❤",
+            date: "13.02.2022 19:22:00",
+            likes: 75,
+            isLiked: true,
+          }
+        ]
       }
     ];
 
+    function renderReplies(comment) {
+      return (comment.replies || [])
+        .map((reply) => `
+          <li class="reply">
+            <div class="comment-header">
+              <div>${reply.name}</div>
+              <div>${reply.date}</div>
+            </div>
+            <div class="comment-text">${comment.name}, ${reply.comment}</div>
+          </li>
+        `)
+        .join("");
+    }
+
     function initLikeButtons() {
-      const likeButtons = document.querySelectorAll(".like-button");
+      const likeButtons = document.querySelectorAll(
+        ".comments > .comment > .comment-footer .like-button"
+      );
 
       likeButtons.forEach((likeButton, index) => {
-        likeButton.addEventListener("click", () => {
+        likeButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+
           comments[index].isLiked = !comments[index].isLiked;
 
           if (comments[index].isLiked) {
@@ -111,10 +149,28 @@
       });
     }
 
+    function initReplyClicks() {
+      const commentElements = document.querySelectorAll(".comments > .comment");
+
+      commentElements.forEach((commentEl, index) => {
+        commentEl.addEventListener("click", () => {
+          const comment = comments[index];
+
+          replyToCommentIndex = index;
+          replyHint.textContent = `Ответ ${comment.name}`;
+          replyHint.hidden = false;
+          commentInput.placeholder = `Ваш ответ на комментарий ${comment.name}`;
+          commentInput.focus();
+          addButton.textContent = "Ответить";
+        });
+      });
+    }
+
     function renderComments() {
       commentsList.innerHTML = comments
         .map((comment) => {
           const likeClass = comment.isLiked ? "-active-like" : "";
+          const repliesHtml = renderReplies(comment);
 
           return `
             <li class="comment">
@@ -133,23 +189,27 @@
                   <button class="like-button ${likeClass}"></button>
                 </div>
               </div>
+              <ul class="replies">
+                ${repliesHtml}
+              </ul>
             </li>
           `;
         })
         .join("");
 
       initLikeButtons();
+      initReplyClicks();
     }
 
     renderComments();
 
     nameInput.addEventListener("input", () => {
-      userName = nameInput.value;
+      userName = nameInput.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
       nameInput.classList.remove("error");
     });
 
     commentInput.addEventListener("input", () => {
-      userComment = commentInput.value;
+      userComment = commentInput.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
       commentInput.classList.remove("error");
     });
 
@@ -166,23 +226,34 @@
       }
 
       const dateNow = new Date();
-
-      comments.push({
+      const newItem = {
         name: userName,
         comment: userComment,
         date: dateNow.toLocaleString(),
         likes: 0,
         isLiked: false
-      });
+      };
+
+      if (replyToCommentIndex === null) {
+        newItem.replies = [];
+        comments.push(newItem);
+      } else {
+        comments[replyToCommentIndex].replies.push(newItem);
+      }
 
       nameInput.value = "";
+      commentInput.placeholder = "Введите ваш комментарий";
       commentInput.value = "";
       userName = "";
       userComment = "";
+      replyToCommentIndex = null;
+      replyHint.textContent = "";
+      replyHint.hidden = true;
+      addButton.textContent = "Написать";
 
       renderComments();
     });
-
+    
     
   </script>
 </html>
