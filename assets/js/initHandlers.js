@@ -31,9 +31,9 @@ export function initReplyClicks({
             const comment = comments[index]
 
             setReplyIndex(index)
-            replyHint.textContent = `Ответ ${comment.name}`
+            replyHint.textContent = `Ответ ${comment.author.name}`
             replyHint.hidden = false
-            commentInput.placeholder = `Ваш ответ на комментарий ${comment.name}`
+            commentInput.placeholder = `Ваш ответ на комментарий ${comment.author.name}`
             commentInput.focus()
             addButton.textContent = 'Ответить'
         })

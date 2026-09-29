@@ -1,5 +1,7 @@
 import { renderComments } from './renderComments.js'
 import { replaceHtmlSymbols } from './replaceHtmlSymbols.js'
+import { postComment } from './fetchComments.js'
+import { fetchComments } from './fetchComments.js'
 
 export function bindSanitizedInput(input, onChange) {
     input.addEventListener('input', () => {
@@ -15,44 +17,36 @@ export function bindAddCommentButton({
     commentsList,
     getUserName,
     getUserComment,
-    getReplyIndex,
-    getComments,
-    resetForm,
+    setComments,
     afterRender,
+    resetForm,
 }) {
-    addButton.addEventListener('click', () => {
-        const userName = getUserName()
-        const userComment = getUserComment()
+    addButton.addEventListener('click', async () => {
+        const userName = getUserName().trim()
+        const userComment = getUserComment().trim()
 
-        if (userName.trim() === '') {
+        if (userName.length < 3) {
             nameInput.classList.add('error')
             return
         }
-
-        if (userComment.trim() === '') {
+        if (userComment.length < 3) {
             commentInput.classList.add('error')
             return
         }
 
-        const comments = getComments()
-        const replyToCommentIndex = getReplyIndex()
+        addButton.disabled = true
 
-        const newItem = {
-            name: userName,
-            comment: userComment,
-            date: new Date().toLocaleString(),
-            likes: 0,
-            isLiked: false,
+        try {
+            await postComment({ name: userName, text: userComment })
+
+            const updatedComments = await fetchComments()
+            setComments(updatedComments)
+            resetForm()
+            renderComments(updatedComments, commentsList, afterRender)
+        } catch (error) {
+            alert(error.message)
+        } finally {
+            addButton.disabled = false
         }
-
-        if (replyToCommentIndex === null) {
-            newItem.replies = []
-            comments.push(newItem)
-        } else {
-            comments[replyToCommentIndex].replies.push(newItem)
-        }
-
-        resetForm()
-        renderComments(comments, commentsList, afterRender)
     })
 }

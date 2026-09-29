@@ -18,17 +18,17 @@ export function renderComments(comments, commentsList, onAfterRender) {
     commentsList.innerHTML = comments
         .map((comment) => {
             const likeClass = comment.isLiked ? '-active-like' : ''
-            const repliesHtml = renderReplies(comment)
+            const date = new Date(comment.date).toLocaleString('ru-RU')
 
             return `
         <li class="comment">
             <div class="comment-header">
-            <div>${comment.name}</div>
-            <div>${comment.date}</div>
+            <div>${comment.author.name}</div>
+            <div>${date}</div>
             </div>
             <div class="comment-body">
             <div class="comment-text">
-                ${comment.comment}
+                ${comment.text}
             </div>
             </div>
             <div class="comment-footer">
@@ -37,9 +37,6 @@ export function renderComments(comments, commentsList, onAfterRender) {
                 <button class="like-button ${likeClass}"></button>
             </div>
             </div>
-            <ul class="replies">
-            ${repliesHtml}
-            </ul>
         </li>
         `
         })
