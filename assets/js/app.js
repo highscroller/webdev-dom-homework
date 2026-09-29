@@ -59,6 +59,9 @@ export async function init() {
             replyHint.hidden = true
             addButton.textContent = 'Написать'
         },
+        setComments: (newComments) => {
+            comments = newComments
+        },
     })
 
     try {
